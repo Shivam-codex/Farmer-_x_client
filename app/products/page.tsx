@@ -3,6 +3,8 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
+import { useCart } from "@/contexts/cart-context"
+import { ShoppingCart } from "lucide-react"
 
 const products = [
   {
@@ -226,6 +228,7 @@ const products = [
 export default function ProductsPage() {
   const searchParams = useSearchParams()
   const category = searchParams.get('category')
+  const { addItem, state } = useCart()
   
   // Get all unique categories
   const categories = [...new Set(products.map((product) => product.category))]
@@ -237,9 +240,18 @@ export default function ProductsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">
-        {category ? `${category} Products` : "All Products"}
-      </h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">
+          {category ? `${category} Products` : "All Products"}
+        </h1>
+        <Link
+          href="/cart"
+          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+        >
+          <ShoppingCart className="h-5 w-5" />
+          <span>Cart ({state.items.length})</span>
+        </Link>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="md:col-span-1">
@@ -274,33 +286,34 @@ export default function ProductsPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
-                <Link key={product.id} href={`/products/${product.id}`} className="group">
-                  <div className="border rounded-lg overflow-hidden transition-all hover:shadow-lg">
-                    <div className="relative h-48">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      />
-                    </div>
-                    <div className="p-4">
-                      <span className="text-xs text-gray-500">{product.category}</span>
-                      <h3 className="font-semibold text-lg">{product.name}</h3>
-                      <p className="text-sm text-gray-500">by {product.farmer}</p>
-                      <p className="mt-2 font-bold">
-                        ₹{product.price} / {product.unit}
-                      </p>
-                      <button 
-                        className="mt-3 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors"
-                        onClick={(e) => e.preventDefault()}
-                      >
-                        Add to Cart
-                      </button>
-                    </div>
+                <div
+                  key={product.id}
+                  className="border rounded-lg overflow-hidden transition-all hover:shadow-lg"
+                >
+                  <div className="relative h-48">
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
                   </div>
-                </Link>
+                  <div className="p-4">
+                    <span className="text-xs text-gray-500">{product.category}</span>
+                    <h3 className="font-semibold text-lg">{product.name}</h3>
+                    <p className="text-sm text-gray-500">by {product.farmer}</p>
+                    <p className="mt-2 font-bold">
+                      ₹{product.price} / {product.unit}
+                    </p>
+                    <button
+                      onClick={() => addItem(product)}
+                      className="w-full mt-4 bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition-colors"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           )}
